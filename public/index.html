@@ -5,9 +5,146 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>REPLACE ME</title>
+    <title>Notes</title>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 </head>
 <body>
-    <h1>HERE BE YOUR CLIENT APP</h1>
+<div id="app">
+
+    <!-- Sign In and Out buttons -->
+    <div class="text-center">
+        <button type="button" class="btn btn-success" @click="showSignInModal" v-show="!sessionId">Sign In</button>
+        <button type="button" class="btn btn-danger" @click="signOut" v-if="sessionId">Sign Out</button>
+        <div id="signInDiv" v-show="!sessionId"
+             style="display: flex; justify-content: center; align-items: center; text-align: center; margin-top:5px;"></div>
+    </div>
+
+    <h1>Notes</h1>
+
+    <!-- App content will later be here -->
+
+
+
+    <!-- Modals -->
+    <div class="modal" id="signInModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sign in</h5>
+                    <button type="button" aria-label="Close" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <label for="email">Email:</label><br>
+                        <input id="email" name="email" type="email" v-model="email"><br>
+                        <label for="password">Password:</label><br>
+                        <input id="password" name="password" type="password" v-model="password">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" @click="signInClicked" class="btn btn-primary">Sign In</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/vue@3.2.31/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+        crossorigin="anonymous"></script>
+<script>
+    const vue = Vue.createApp({
+        data() {
+            return {
+                modalHandler: null,
+                sessionId: null,
+                email: null,
+                password: null
+            }
+        },
+        async created() {
+
+            // Load the session id from the browser
+            this.sessionId = localStorage.getItem('sessionId')
+
+            // If there is no session id, show the sign in modal
+            if (!this.sessionId) {
+                document.addEventListener('DOMContentLoaded', async () => {
+                    this.showSignInModal()
+                })
+            }
+        },
+        methods: {
+            showSignInModal() {
+                this.modalHandler = new bootstrap.Modal(document.getElementById('signInModal'), {
+                    keyboard: false
+                })
+                this.modalHandler.show()
+            },
+            signInClicked() {
+                this.signIn()
+            },
+            send(method, url, data, successCallback, errorCallback) {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+
+                // Add the session id to the headers if it exists
+                if (this.sessionId) {
+                    headers['Authorization'] = 'Bearer ' + this.sessionId
+                }
+
+                fetch(url, {
+                    method: method,
+                    headers: headers,
+                    body: JSON.stringify(data)
+                }).then(async response => {
+                    if (response.ok) {
+                        successCallback(response)
+                    } else {
+                        if (response.status === 401) {
+
+                            // If the session id is invalid, remove it from the browser
+                            this.sessionId = null
+                            localStorage.removeItem('sessionId')
+
+                            this.showSignInModal()
+
+                            return
+                        }
+
+                        if (errorCallback) {
+                            errorCallback(response)
+                        } else {
+                            alert(await response.text())
+                        }
+                    }
+                })
+            },
+            signIn() {
+                this.send('POST', '/sessions', {
+                    email: this.email,
+                    password: this.password
+                }, async response => {
+                    this.sessionId = await response.text()
+                    localStorage.setItem('sessionId', this.sessionId)
+                    this.modalHandler.hide()
+                })
+            },
+            signOut() {
+                this.send('DELETE', '/sessions', {}, async response => {
+                    this.sessionId = null
+                    localStorage.removeItem('sessionId')
+                })
+            }
+        }
+    }).mount('#app')
+</script>
 </body>
 </html>
