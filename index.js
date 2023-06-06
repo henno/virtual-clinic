@@ -116,6 +116,38 @@ app.delete('/sessions', authenticateRequest, (req, res) => {
     res.status(204).send()
 })
 
+app.post('/users', (req, res) => {
+    // Validate that the user does not already exist
+    const existingUser = users.find(user => user.email === req.body.email)
+    if (existingUser) {
+        return res.status(409).send('User already exists')
+    }
+
+    // Return 400 if email or password is missing
+    if (!req.body.email || !req.body.password) {
+        return res.status(400).send('Email and password are required')
+    }
+
+    // Return 400 if email is not in correct format or password is less than 8 chars
+    if (!req.body.email.includes('@') || req.body.password.length < 8) {
+        return res.status(400).send('Email must be in correct format and password must be at least 8 characters')
+    }
+
+    // Create user
+    const user = {
+        id: uuidv4(),
+        email: req.body.email,
+        password: req.body.password
+    }
+
+    // Add user to users array
+    users.push(user)
+
+    // Return 201 Created
+    res.status(201).send()
+
+})
+
 app.listen(port, () => {
     console.log(`App running. Docs at http://localhost:${port}/docs`);
 })

@@ -44,6 +44,43 @@ paths:
           Bearer: []
       summary: Destroy a session
       description: 'Destorys a `Session`, effectively signing out.'
+  /users:
+    summary: Path used to manage the list of users.
+    description: >-
+      The REST endpoint/path used to list and create zero or more `User` entities.  This path contains a
+      `GET` and `POST` operation to perform the list and create tasks, respectively.
+    post:
+      requestBody:
+        description: A new `User` to be created.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+        required: true
+      tags:
+        - /users
+      responses:
+        '201':
+          description: Successful response.
+        '400':
+          content:
+            text/html:
+              examples:
+                Email must be in correct format and password must be at least 8 characters:
+                  value: >
+                    Email must be in correct format and password must be at least 8
+                    characters
+          description: Bad Request
+        '409':
+          content:
+            text/html:
+              examples:
+                User already exists:
+                  value: User already exists
+          description: User already exists
+      operationId: createUser
+      summary: Create a User
+      description: Creates a new instance of a `User`.
 components:
   schemas:
     Credentials:
@@ -57,7 +94,7 @@ components:
           type: string
       example:
         email: admin@example.com
-        password: '1234'
+        password: '12341234'
     Session:
       title: Root Type for Session
       description: ''
@@ -70,6 +107,18 @@ components:
       example:
         email: admin@admin.com
         password: admin
+    User:
+      title: Root Type for User
+      description: ''
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      example:
+        email: henno@hot.ee
+        password: mylittlesecret
   securitySchemes:
     Bearer:
       scheme: bearer
@@ -78,3 +127,6 @@ tags:
   -
     name: /sessions
     description: Operations with sessions
+  -
+    name: /users
+    description: ''
