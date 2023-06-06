@@ -9,10 +9,16 @@ require('dotenv').config();
 
 const port = process.env.PORT || 3000;
 
-let sessions = [];
-let users = [
-    {id: 1, email: 'admin@admin.com', password: 'admin'}
+let sessions = [
+    {id: "1", userId: 1} // Do not use in production
 ];
+
+let users = [
+    {id: 1, email: 'admin@admin.com', password: 'admin'} // Do not use in production
+];
+let consultations = [
+    {id: 1, userId: 1, date: '2021-01-01', issue: 'Headache'} // Do not use in production
+]
 // Serve static files
 app.use(express.static('public'));
 
@@ -146,6 +152,18 @@ app.post('/users', (req, res) => {
     // Return 201 Created
     res.status(201).send()
 
+})
+
+function getConsultations(userId) {
+    return consultations.filter(consultation => consultation.userId === userId)
+}
+
+app.get('/consultations', authenticateRequest, (req, res) => {
+    // Get consultations for the user
+    const consultations = getConsultations(req.user.id)
+
+    // Return a list of consultations
+    res.send(consultations)
 })
 
 app.listen(port, () => {

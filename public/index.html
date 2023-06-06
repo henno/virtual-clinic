@@ -21,16 +21,36 @@
     <!-- Sign In and Out buttons -->
     <br>
     <div class="text-center">
-        <button type="button" class="btn btn-success" @click="showModal('signInModal')" v-show="!sessionId">Sign In</button>
+        <button type="button" class="btn btn-success" @click="showModal('signInModal')" v-show="!sessionId">Sign In
+        </button>
         &nbsp;
-        <button type="button" class="btn btn-success" @click="showModal('signUpModal')" v-show="!sessionId">Sign Up</button>
+        <button type="button" class="btn btn-success" @click="showModal('signUpModal')" v-show="!sessionId">Sign Up
+        </button>
         &nbsp;
         <button type="button" class="btn btn-danger" @click="signOut" v-if="sessionId">Sign Out</button>
     </div>
 
+    <!-- List of consultations -->
+    <div class="row" v-if="sessionId">
+        <div class="col-md-12">
+            <h2>Consultations</h2>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Issue</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="consultation in consultations">
+                    <td>{{ consultation.date }}</td>
+                    <td>{{ consultation.issue }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-
-    <!-- App content will later be here -->
 
     <!-- Modals -->
 
@@ -63,7 +83,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Sign in</h5>
+                    <h5 class="modal-title">Sign Up</h5>
                     <button type="button" aria-label="Close" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -89,13 +109,15 @@
         integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
         crossorigin="anonymous"></script>
 <script>
+
     const vue = Vue.createApp({
         data() {
             return {
                 modalHandler: null,
                 sessionId: null,
                 email: null,
-                password: null
+                password: null,
+                consultations: []
             }
         },
         async created() {
@@ -103,14 +125,17 @@
             // Load the session id from the browser
             this.sessionId = localStorage.getItem('sessionId')
 
-            // If there is no session id, show the sign in modal
-            if (!this.sessionId) {
-                document.addEventListener('DOMContentLoaded', async () => {
-                    this.showModal('signInModal')
-                })
+            // If the user is signed in, load the consultations
+            if (this.sessionId) {
+                this.loadConsultations()
             }
         },
         methods: {
+            loadConsultations() {
+                this.send('GET', '/consultations', null, async response => {
+                    this.consultations = await response.json()
+                })
+            },
             showModal(modalId) {
                 this.modalHandler = new bootstrap.Modal(document.getElementById(modalId), {
                     keyboard: false
@@ -128,11 +153,18 @@
                     headers['Authorization'] = 'Bearer ' + this.sessionId
                 }
 
-                fetch(url, {
+                let options = {
                     method: method,
                     headers: headers,
-                    body: JSON.stringify(data)
-                }).then(async response => {
+
+                };
+
+                // Add the body if it exists
+                if(data) {
+                    options.body = JSON.stringify(data)
+                }
+
+                fetch(url, options).then(async response => {
                     if (response.ok) {
                         successCallback(response)
                     } else {
@@ -142,7 +174,8 @@
                             this.sessionId = null
                             localStorage.removeItem('sessionId')
 
-                            this.showSignInModal()
+                            // And show the sign in modal
+                            this.showModal('signInModal')
 
                             return
                         }
@@ -160,9 +193,18 @@
                     email: this.email,
                     password: this.password
                 }, async response => {
-                    this.sessionId = await response.text()
+                    // Get the session id
+                    const session = await response.json()
+                    this.sessionId = session.sessionId
+
+                    // Save the session id to the browser
                     localStorage.setItem('sessionId', this.sessionId)
+
+                    // Hide the modal
                     this.modalHandler.hide()
+
+                    // Get consultations
+                    this.loadConsultations()
                 })
             },
             signUp() {
@@ -177,7 +219,7 @@
             },
             signOut() {
                 this.send('DELETE', '/sessions', {}, async response => {
-                    if(response.ok) {
+                    if (response.ok) {
                         this.sessionId = null
                         localStorage.removeItem('sessionId')
                     }

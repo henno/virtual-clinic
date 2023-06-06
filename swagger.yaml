@@ -81,6 +81,44 @@ paths:
       operationId: createUser
       summary: Create a User
       description: Creates a new instance of a `User`.
+  /consultations:
+    summary: Path used to manage the list of consultations.
+    description: >-
+      The REST endpoint/path used to list and create zero or more `Consultation` entities.  This path
+      contains a `GET` and `POST` operation to perform the list and create tasks, respectively.
+    get:
+      tags:
+        - /consultations
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Consultation'
+          description: Successful response - returns an array of `Consultation` entities.
+        '401':
+          content:
+            text/html:
+              examples:
+                User not found:
+                  value: User not found
+                Invalid session:
+                  value: Invalid session
+                Session ID is required:
+                  value: Session ID is required
+                'Authorization header format must be "Bearer {token}"':
+                  value: 'Authorization header format must be "Bearer {token}"'
+                Authorization header is required:
+                  value: Authorization header is required
+          description: Unauthorized
+      security:
+        -
+          Bearer: []
+      operationId: getConsultations
+      summary: List All Consultations
+      description: Gets a list of all `Consultation` entities.
 components:
   schemas:
     Credentials:
@@ -119,6 +157,27 @@ components:
       example:
         email: henno@hot.ee
         password: mylittlesecret
+    Consultation:
+      title: Root Type for Consultation
+      description: ''
+      type: object
+      properties:
+        id:
+          format: int32
+          type: integer
+        userId:
+          format: int32
+          type: integer
+        date:
+          format: date
+          type: string
+        issue:
+          type: string
+      example:
+        id: 1
+        userId: 1
+        date: '2021-01-01'
+        issue: Headache
   securitySchemes:
     Bearer:
       scheme: bearer
@@ -129,4 +188,7 @@ tags:
     description: Operations with sessions
   -
     name: /users
+    description: ''
+  -
+    name: /consultations
     description: ''
