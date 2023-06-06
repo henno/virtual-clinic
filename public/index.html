@@ -135,6 +135,7 @@
                         </form>
                     </div>
                     <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" @click="deleteOpenConsultation()" v-if="mode === 'edit'">Delete</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" @click="addConsultation" class="btn btn-primary">Save</button>
                     </div>
@@ -160,6 +161,7 @@
                 password: null,
                 consultations: [],
                 addEditConsultationIssue: null,
+                addEditConsultationId: null,
                 mode: 'add'
             }
         },
@@ -192,12 +194,26 @@
             showEditModal(consultation) {
                 this.mode = 'edit'
                 this.addEditConsultationIssue = consultation.issue
+                this.addEditConsultationId = consultation.id
                 this.showModal('addEditConsultationModal')
             },
             addConsultation() {
                 this.send('POST', '/consultations', {
                     issue: this.addEditConsultationIssue
                 }, async response => {
+
+                    // Clear the issue
+                    this.addEditConsultationIssue = null
+
+                    // Hide the modal
+                    this.modalHandler.hide()
+
+                    // Reload the consultations
+                    this.loadConsultations()
+                })
+            },
+            deleteOpenConsultation() {
+                this.send('DELETE', '/consultations/' + this.addEditConsultationId, null, async response => {
 
                     // Clear the issue
                     this.addEditConsultationIssue = null

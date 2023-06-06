@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  title: ITA21
+  title: Virtual Clinic
   version: 1.0.0
   description: Demonstration API
 paths:
@@ -185,6 +185,45 @@ paths:
     description: >-
       The REST endpoint/path used to edit `Consultation` entities. This path contains a `PATCH` and
       `DELETE` operation to perform the edit and delete tasks, respectively.
+    delete:
+      tags:
+        - /consultations
+      parameters:
+        -
+          name: id
+          description: The id of the `Consultation` to be deleted.
+          in: path
+          required: true
+      responses:
+        '204':
+          description: Successful deletion
+        '401':
+          content:
+            text/html:
+              examples:
+                User not found:
+                  value: User not found
+                Invalid session:
+                  value: Invalid session
+                Session ID is required:
+                  value: Session ID is required
+                'Authorization header format must be "Bearer {token}"':
+                  value: 'Authorization header format must be "Bearer {token}"'
+                Authorization header is required:
+                  value: Authorization header is required
+          description: Unauthorized
+        '404':
+          content:
+            text/html:
+              examples:
+                Consultation not found:
+                  value: Consultation not found
+          description: The consultation does not exist
+      security:
+        -
+          Bearer: []
+      summary: Deletes a Consultation
+      description: Deletes a `Consultation`
     patch:
       requestBody:
         content:

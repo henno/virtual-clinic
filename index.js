@@ -229,6 +229,27 @@ app.patch('/consultations/:id', authenticateRequest, (req, res) => {
     res.status(204).send()
 })
 
+app.delete('/consultations/:id', authenticateRequest, (req, res) => {
+    const consultation = consultations.find(consultation => consultation.id === req.params.id)
+
+    // Return 404 if consultation not found
+    if (!consultation) {
+        return res.status(404).send('Consultation not found')
+    }
+
+    // Return 403 if not own consultation
+    if (consultation.userId !== req.user.id) {
+        return res.status(403).send('Consultation does not belong to the user')
+    }
+
+    // Remove consultation from consultations array
+    consultations = consultations.filter(consultation => consultation.id !== req.params.id)
+
+    // Return 204 No Content
+    res.status(204).send()
+
+})
+
 app.listen(port, () => {
     console.log(`App running. Docs at http://localhost:${port}/docs`);
 })
