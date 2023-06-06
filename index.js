@@ -17,7 +17,7 @@ let users = [
     {id: 1, email: 'admin@admin.com', password: 'admin'} // Do not use in production
 ];
 let consultations = [
-    {id: 1, userId: 1, date: '2021-01-01', issue: 'Headache'} // Do not use in production
+    {id: "some-id", userId: 1, date: '2021-01-01', issue: 'Headache'} // Do not use in production
 ]
 // Serve static files
 app.use(express.static('public'));
@@ -166,6 +166,17 @@ app.get('/consultations', authenticateRequest, (req, res) => {
     res.send(consultations)
 })
 
+function getFormattedDate(date) {
+
+    date = date ? new Date(date) : new Date();
+
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString()
+        .padStart(2, '0')}-${date.getDate().toString()
+        .padStart(2, '0')} ${date.getHours().toString()
+        .padStart(2, '0')}:${date.getMinutes().toString()
+        .padStart(2, '0')}`;
+}
+
 app.post('/consultations', authenticateRequest, (req, res) => {
     // Return 400 if issue parameter is missing
     if (!req.body.issue) {
@@ -173,18 +184,11 @@ app.post('/consultations', authenticateRequest, (req, res) => {
     }
 
     // Create YYYY-MM-DD HH:II formatted date with months and days with leading zeros
-    const date = new Date(), formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString()
-        .padStart(2, '0')}-${date.getDate().toString()
-        .padStart(2, '0')} ${date.getHours().toString()
-        .padStart(2, '0')}:${date.getMinutes().toString()
-        .padStart(2, '0')}`;
-
-
     // Create consultation for the user
     const consultation = {
         id: uuidv4(),
         userId: req.user.id,
-        date: formattedDate,
+        date: getFormattedDate(),
         issue: req.body.issue
     }
 
@@ -193,6 +197,36 @@ app.post('/consultations', authenticateRequest, (req, res) => {
 
     // Return 201 Created
     res.status(201).send(consultation)
+})
+
+app.patch('/consultations/:id', authenticateRequest, (req, res) => {
+
+    // Return 400 if issue parameter is missing
+    if (!req.body.issue) {
+        return res.status(400).send('Issue is required')
+    }
+
+    // Get consultation
+    const consultation = consultations.find(consultation => consultation.id === req.params.id)
+
+    // Return 404 if consultation not found
+    if (!consultation) {
+        return res.status(404).send('Consultation not found')
+    }
+
+    // Return 403 if consultation does not belong to the user
+    if (consultation.userId !== req.user.id) {
+        return res.status(403).send('Consultation does not belong to the user')
+    }
+
+    // Add the consultation edit date
+    consultation.editedAt = getFormattedDate()
+
+    // Update consultation
+    consultation.issue = req.body.issue
+
+    // Return 204 No Content
+    res.status(204).send()
 })
 
 app.listen(port, () => {

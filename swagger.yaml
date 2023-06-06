@@ -180,6 +180,59 @@ paths:
           Bearer: []
       summary: Create a Consultation for a User.
       description: Creates a new instance of a `Consultation`.
+  '/consultations/{id}':
+    summary: Path used to manage specific consultations.
+    description: >-
+      The REST endpoint/path used to edit `Consultation` entities. This path contains a `PATCH` and
+      `DELETE` operation to perform the edit and delete tasks, respectively.
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consultation'
+            examples:
+              Consultation:
+                value:
+                  issue: some text
+      tags:
+        - /consultations
+      responses:
+        '204':
+          description: Edit successful.
+        '401':
+          content:
+            text/html:
+              examples:
+                User not found:
+                  value: User not found
+                Invalid session:
+                  value: Invalid session
+                Session ID is required:
+                  value: Session ID is required
+                'Authorization header format must be "Bearer {token}"':
+                  value: 'Authorization header format must be "Bearer {token}"'
+                Authorization header is required:
+                  value: Authorization header is required
+          description: Unauthorized
+        '404':
+          content:
+            text/html:
+              examples:
+                Consultation not found:
+                  value: Consultation not found
+          description: The consultation does not exist.
+      security:
+        -
+          Bearer: []
+      summary: Edit a Consultation for a signed in User.
+      description: Edits a given `Consultation` entity.
+    parameters:
+      -
+        name: id
+        description: The id of the `Consultation` to be edited.
+        in: path
+        required: true
 components:
   schemas:
     Credentials:
@@ -224,8 +277,7 @@ components:
       type: object
       properties:
         id:
-          format: int32
-          type: integer
+          type: string
         userId:
           format: int32
           type: integer
@@ -235,7 +287,7 @@ components:
         issue:
           type: string
       example:
-        id: 1
+        id: c646622b-027c-4ced-ba2f-9df675b3e624
         userId: 1
         date: '2021-12-31 20:07'
         issue: Headache
