@@ -166,6 +166,35 @@ app.get('/consultations', authenticateRequest, (req, res) => {
     res.send(consultations)
 })
 
+app.post('/consultations', authenticateRequest, (req, res) => {
+    // Return 400 if issue parameter is missing
+    if (!req.body.issue) {
+        return res.status(400).send('Issue is required')
+    }
+
+    // Create YYYY-MM-DD HH:II formatted date with months and days with leading zeros
+    const date = new Date(), formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString()
+        .padStart(2, '0')}-${date.getDate().toString()
+        .padStart(2, '0')} ${date.getHours().toString()
+        .padStart(2, '0')}:${date.getMinutes().toString()
+        .padStart(2, '0')}`;
+
+
+    // Create consultation for the user
+    const consultation = {
+        id: uuidv4(),
+        userId: req.user.id,
+        date: formattedDate,
+        issue: req.body.issue
+    }
+
+    // Add consultation to consultations array
+    consultations.push(consultation)
+
+    // Return 201 Created
+    res.status(201).send(consultation)
+})
+
 app.listen(port, () => {
     console.log(`App running. Docs at http://localhost:${port}/docs`);
 })

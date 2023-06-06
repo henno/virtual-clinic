@@ -13,90 +13,130 @@
         h1 {
             text-align: center;
         }
+
+        /* Make the Add issue modal's textarea fit the container and make it taller */
+        #addConsultationModal textarea {
+            width: 100%;
+            height: 200px;
+        }
     </style>
 </head>
 <body>
+
 <div id="app">
-    <h1>Virtual Clinic</h1>
-    <!-- Sign In and Out buttons -->
-    <br>
-    <div class="text-center">
-        <button type="button" class="btn btn-success" @click="showModal('signInModal')" v-show="!sessionId">Sign In
-        </button>
-        &nbsp;
-        <button type="button" class="btn btn-success" @click="showModal('signUpModal')" v-show="!sessionId">Sign Up
-        </button>
-        &nbsp;
-        <button type="button" class="btn btn-danger" @click="signOut" v-if="sessionId">Sign Out</button>
-    </div>
+    <div class="container">
 
-    <!-- List of consultations -->
-    <div class="row" v-if="sessionId">
-        <div class="col-md-12">
-            <h2>Consultations</h2>
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Issue</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="consultation in consultations">
-                    <td>{{ consultation.date }}</td>
-                    <td>{{ consultation.issue }}</td>
-                </tr>
-                </tbody>
-            </table>
+        <h1>Virtual Clinic</h1>
+        <!-- Sign In and Out buttons -->
+        <br>
+        <div class="text-center">
+            <button type="button" class="btn btn-success" @click="showModal('signInModal')" v-show="!sessionId">Sign In
+            </button>
+            &nbsp;
+            <button type="button" class="btn btn-success" @click="showModal('signUpModal')" v-show="!sessionId">Sign Up
+            </button>
+            &nbsp;
+            <button type="button" class="btn btn-danger" @click="signOut" v-if="sessionId">Sign Out</button>
         </div>
-    </div>
+
+        <!-- List of consultations -->
+        <div class="row" v-if="sessionId">
+            <div class="col-md-6">
+                <h2>Consultations</h2>
+            </div>
+            <div class="col-md-6 text-end">
+                <button type="button" class="btn btn-primary" @click="showModal('addConsultationModal')">Add</button>
+            </div>
+        </div>
+        <div class="row" v-if="sessionId">
+            <div class="col-md-12">
+
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Issue</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="consultation in consultations">
+                        <td>{{ consultation.date }}</td>
+                        <td>{{ consultation.issue }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
 
-    <!-- Modals -->
+        <!-- Modals -->
 
-    <!-- Sign In Modal -->
-    <div class="modal" id="signInModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Sign in</h5>
-                    <button type="button" aria-label="Close" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <label for="signInEmail">Email:</label><br>
-                        <input id="signInEmail" name="email" type="email" v-model="email"><br>
-                        <label for="signInPassword">Password:</label><br>
-                        <input id="signInPassword" name="password" type="password" v-model="password">
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" @click="signIn" class="btn btn-primary">Sign In</button>
+        <!-- Sign In Modal -->
+        <div class="modal" id="signInModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Sign in</h5>
+                        <button type="button" aria-label="Close" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <label for="signInEmail">Email:</label><br>
+                            <input id="signInEmail" name="email" type="email" v-model="email"><br>
+                            <label for="signInPassword">Password:</label><br>
+                            <input id="signInPassword" name="password" type="password" v-model="password">
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" @click="signIn" class="btn btn-primary">Sign In</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Sign Up Modal -->
-    <div class="modal" id="signUpModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Sign Up</h5>
-                    <button type="button" aria-label="Close" class="btn-close" data-bs-dismiss="modal"></button>
+        <!-- Sign Up Modal -->
+        <div class="modal" id="signUpModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Sign Up</h5>
+                        <button type="button" aria-label="Close" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <label for="signUpEmail">Email:</label><br>
+                            <input id="signUpEmail" name="email" type="email" v-model="email"><br>
+                            <label for="signUpPassword">Password:</label><br>
+                            <input id="signUpPassword" name="password" type="password" v-model="password">
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" @click="signUp" class="btn btn-primary">Sign Up</button>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <form>
-                        <label for="signUpEmail">Email:</label><br>
-                        <input id="signUpEmail" name="email" type="email" v-model="email"><br>
-                        <label for="signUpPassword">Password:</label><br>
-                        <input id="signUpPassword" name="password" type="password" v-model="password">
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" @click="signUp" class="btn btn-primary">Sign Up</button>
+            </div>
+        </div>
+
+        <!-- Add Consultation Modal -->
+        <div class="modal" id="addConsultationModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Sign Up</h5>
+                        <button type="button" aria-label="Close" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <label for="addConsultationIssue">Issue:</label><br>
+                            <textarea id="addConsultationIssue" v-model="addConsultationIssue"></textarea>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" @click="addConsultation" class="btn btn-primary">Send</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -115,9 +155,10 @@
             return {
                 modalHandler: null,
                 sessionId: null,
-                email: null,
+                email:null,
                 password: null,
-                consultations: []
+                consultations: [],
+                addConsultationIssue: null
             }
         },
         async created() {
@@ -142,6 +183,21 @@
                 })
                 this.modalHandler.show()
             },
+            addConsultation() {
+                this.send('POST', '/consultations', {
+                    issue: this.addConsultationIssue
+                }, async response => {
+
+                    // Clear the issue
+                    this.addConsultationIssue = null
+
+                    // Hide the modal
+                    this.modalHandler.hide()
+
+                    // Reload the consultations
+                    this.loadConsultations()
+                })
+            },
             send(method, url, data, successCallback, errorCallback) {
                 const headers = {
                     'Content-Type': 'application/json',
@@ -160,7 +216,7 @@
                 };
 
                 // Add the body if it exists
-                if(data) {
+                if (data) {
                     options.body = JSON.stringify(data)
                 }
 
